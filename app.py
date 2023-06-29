@@ -1,8 +1,9 @@
 from typing import Dict
 
+from duckduckgo_search import DDGS
 import google.generativeai as palm
 import streamlit as st
-from duckduckgo_search import DDGS
+import pandas as pd
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
@@ -34,9 +35,8 @@ def internet_search(prompt: str) -> Dict[str, str]:
     return {"context": content_bodies, "urls": list_of_urls}
 
 
-def video_search(prompt: str) -> Dict[str, str]:
-    urls = []
-    descriptions = []
+def video_search(prompt: str) -> pd.DataFrame:
+    data = []
     with DDGS() as ddgs:
         keywords = "tesla"
         ddgs_videos_gen = ddgs.videos(
@@ -48,10 +48,11 @@ def video_search(prompt: str) -> Dict[str, str]:
             duration="medium",
         )
         for r in ddgs_videos_gen:
-            urls.append(r["content"])
-            descriptions.append(r["description"])
+            data.append({"content": r["content"], "description": r["description"]})
+    
+    data = pd.DataFrame(search_results)
 
-    return {"urls": urls, "descriptions": descriptions}
+    return data
 
 
 # Setting page title and header
@@ -100,20 +101,10 @@ if prompt := st.chat_input("Enter key words here."):
         """
         response = call_palm(f"{processed_user_question}")
     elif domain == "Video":
-        search_results = video_search(prompt)
-        urls = search_results["urls"]
-        context = search_results["descriptions"]
-        processed_user_question = f"""
-            You are a search engine and you have information from the internet here: {context}.
-            In addition, you have a list of URls as reference: {urls}.
-            Answer the following question: {prompt} based on the information above. 
-            Make sure to return URls as list of citations. 
-        """
-        response = call_palm(f"{processed_user_question}")
+        response = video_search(prompt)
     else:
         search_results = internet_search(prompt)
         context = search_results["context"]
-        context = ' '.join(context)[::5000]
         urls = search_results["urls"]
         processed_user_question = f"""
             You are a search engine and you have information from the internet here: {context}.
@@ -121,10 +112,7 @@ if prompt := st.chat_input("Enter key words here."):
             Answer the following question: {prompt} based on the information above. 
             Make sure to return URls as list of citations. 
         """
-        responses = []
         response = call_palm(f"{processed_user_question}")
-        responses.append(response)
-        responses.append(urls)
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
