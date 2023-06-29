@@ -50,7 +50,7 @@ def video_search(prompt: str) -> pd.DataFrame:
         for r in ddgs_videos_gen:
             data.append({"content": r["content"], "description": r["description"]})
     
-    data = pd.DataFrame(data)
+    data = pd.DataFrame(data).to_markdown()
 
     return data
 
