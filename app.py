@@ -48,7 +48,7 @@ def video_search(prompt: str) -> Dict[str, str]:
         duration="medium",
         )
         for r in ddgs_videos_gen:
-            urls.append(r['url'])
+            urls.append(r['content'])
             descriptions.append(r['description'])
 
     return {"urls": urls, "descriptions": descriptions}
@@ -66,7 +66,7 @@ st.markdown(
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
-domain = st.selectbox(
+domain = st.sidebar.selectbox(
     'Choose which domain you want to search:',
     ('Text', 'Video', 'More to come...'))
 
