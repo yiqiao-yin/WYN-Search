@@ -80,7 +80,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # React to user input
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("Enter key words here."):
     # Display user message in chat message container
     st.chat_message("user").markdown(prompt)
 
@@ -101,8 +101,8 @@ if prompt := st.chat_input("What is up?"):
         response = call_palm(f"{processed_user_question}")
     elif domain == "Video":
         search_results = video_search(prompt)
-        context = search_results["descriptions"]
         urls = search_results["urls"]
+        context = search_results["descriptions"]
         processed_user_question = f"""
             You are a search engine and you have information from the internet here: {context}.
             In addition, you have a list of URls as reference: {urls}.
