@@ -1,9 +1,12 @@
-from duckduckgo_search import DDGS
+from typing import Dict
+
 import google.generativeai as palm
 import streamlit as st
+from duckduckgo_search import DDGS
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
+
 
 def call_palm(prompt: str) -> str:
     completion = palm.generate_text(
@@ -20,15 +23,15 @@ def internet_search(prompt: str) -> Dict[str, str]:
     list_of_urls = []
     with DDGS() as ddgs:
         i = 0
-        for r in ddgs.text(prompt, region='wt-wt', safesearch='Off', timelimit='y'):
+        for r in ddgs.text(prompt, region="wt-wt", safesearch="Off", timelimit="y"):
             if i <= 5:
-                content_bodies.append(r['body'])
-                list_of_urls.append(r['href'])
+                content_bodies.append(r["body"])
+                list_of_urls.append(r["href"])
                 i += 1
             else:
                 break
-    
-    return {'context': content_bodies, 'urls': list_of_urls}
+
+    return {"context": content_bodies, "urls": list_of_urls}
 
 
 st.title("WYN Search 🧐")
@@ -52,8 +55,8 @@ if prompt := st.chat_input("What is up?"):
 
     # Get response
     search_results = internet_search(prompt)
-    context = search_results['context']
-    urls = search_results['urls']
+    context = search_results["context"]
+    urls = search_results["urls"]
     processed_user_question = f"""
         You are a search engine and you have information from the internet here: {context}.
         In addition, you have a list of URls as reference: {urls}.
