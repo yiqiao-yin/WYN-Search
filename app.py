@@ -1,3 +1,4 @@
+from duckduckgo_search import DDGS
 import google.generativeai as palm
 import streamlit as st
 
@@ -12,6 +13,22 @@ def call_palm(prompt: str) -> str:
         max_output_tokens=800,
     )
     return completion.result
+
+
+def internet_search(prompt: str) -> Dict[str, str]:
+    content_bodies = []
+    list_of_urls = []
+    with DDGS() as ddgs:
+        i = 0
+        for r in ddgs.text(prompt, region='wt-wt', safesearch='Off', timelimit='y'):
+            if i <= 5:
+                content_bodies.append(r['body'])
+                list_of_urls.append(r['href'])
+                i += 1
+            else:
+                break
+    
+    return {'context': content_bodies, 'urls': list_of_urls}
 
 
 st.title("WYN Search 🧐")
@@ -34,7 +51,16 @@ if prompt := st.chat_input("What is up?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     # Get response
-    response = call_palm(f"{prompt}")
+    search_results = internet_search(prompt)
+    context = search_results['context']
+    urls = search_results['urls']
+    processed_user_question = f"""
+        You are a search engine and you have information from the internet here: {context}.
+        In addition, you have a list of URls as reference: {urls}.
+        Answer the following question: {prompt} based on the information above. 
+        Make sure to return URls as list of citations. 
+    """
+    response = call_palm(f"{processed_user_question}")
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
