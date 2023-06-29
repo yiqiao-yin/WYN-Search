@@ -38,18 +38,18 @@ def video_search(prompt: str) -> Dict[str, str]:
     urls = []
     descriptions = []
     with DDGS() as ddgs:
-        keywords = 'tesla'
+        keywords = "tesla"
         ddgs_videos_gen = ddgs.videos(
-        keywords,
-        region="wt-wt",
-        safesearch="Off",
-        timelimit="w",
-        resolution="high",
-        duration="medium",
+            keywords,
+            region="wt-wt",
+            safesearch="Off",
+            timelimit="w",
+            resolution="high",
+            duration="medium",
         )
         for r in ddgs_videos_gen:
-            urls.append(r['content'])
-            descriptions.append(r['description'])
+            urls.append(r["content"])
+            descriptions.append(r["description"])
 
     return {"urls": urls, "descriptions": descriptions}
 
@@ -67,8 +67,8 @@ st.markdown(
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
 domain = st.sidebar.selectbox(
-    'Choose which domain you want to search:',
-    ('Text', 'Video', 'More to come...'))
+    "Choose which domain you want to search:", ("Text", "Video", "More to come...")
+)
 
 # Initialize chat history
 if "messages" not in st.session_state:
