@@ -68,17 +68,39 @@ st.markdown(
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
 domain = st.sidebar.selectbox(
-    "Choose which domain you want to search:", ("Text", "Video", "More to come...")
+    "Choose which domain you want to search:",
+    ("Text", "Video", "More to come...")
 )
+counter_placeholder = st.sidebar.empty()
+counter_placeholder.write(f"Next item ... ")
+clear_button = st.sidebar.button("Clear Conversation", key="clear")
+st.sidebar.markdown(
+    "@ [Yiqiao Yin](https://www.y-yin.io/) | [LinkedIn](https://www.linkedin.com/in/yiqiaoyin/) | [YouTube](https://youtube.com/YiqiaoYin/)"
+)
+
+
+# reset everything
+if clear_button:
+    st.session_state["generated"] = []
+    st.session_state["past"] = []
+    st.session_state["messages"] = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ]
+    st.session_state["number_tokens"] = []
+    st.session_state["domain_name"] = []
+    counter_placeholder.write(f"Next item ...")
+
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+
 
 # React to user input
 if prompt := st.chat_input("Enter key words here."):
