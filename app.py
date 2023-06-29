@@ -34,7 +34,41 @@ def internet_search(prompt: str) -> Dict[str, str]:
     return {"context": content_bodies, "urls": list_of_urls}
 
 
-st.title("WYN Search 🧐")
+def video_search(prompt: str) -> Dict[str, str]:
+    urls = []
+    descriptions = []
+    with DDGS() as ddgs:
+        keywords = 'tesla'
+        ddgs_videos_gen = ddgs.videos(
+        keywords,
+        region="wt-wt",
+        safesearch="Off",
+        timelimit="w",
+        resolution="high",
+        duration="medium",
+        )
+        for r in ddgs_videos_gen:
+            urls.append(r['url'])
+            descriptions.append(r['description'])
+
+    return {"urls": urls, "descriptions": descriptions}
+
+
+# Setting page title and header
+st.set_page_config(page_title="WYN AI", page_icon=":robot_face:")
+st.markdown(
+    f"""
+        <h1 style='text-align: center;'>W.Y.N. Search 🧐</h1>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
+st.sidebar.title("Sidebar")
+domain = st.selectbox(
+    'Choose which domain you want to search:',
+    ('Text', 'Video', 'More to come...'))
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -54,16 +88,39 @@ if prompt := st.chat_input("What is up?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     # Get response
-    search_results = internet_search(prompt)
-    context = search_results["context"]
-    urls = search_results["urls"]
-    processed_user_question = f"""
-        You are a search engine and you have information from the internet here: {context}.
-        In addition, you have a list of URls as reference: {urls}.
-        Answer the following question: {prompt} based on the information above. 
-        Make sure to return URls as list of citations. 
-    """
-    response = call_palm(f"{processed_user_question}")
+    if domain == "Text":
+        search_results = internet_search(prompt)
+        context = search_results["context"]
+        urls = search_results["urls"]
+        processed_user_question = f"""
+            You are a search engine and you have information from the internet here: {context}.
+            In addition, you have a list of URls as reference: {urls}.
+            Answer the following question: {prompt} based on the information above. 
+            Make sure to return URls as list of citations. 
+        """
+        response = call_palm(f"{processed_user_question}")
+    elif domain == "Video":
+        search_results = video_search(prompt)
+        context = search_results["descriptions"]
+        urls = search_results["urls"]
+        processed_user_question = f"""
+            You are a search engine and you have information from the internet here: {context}.
+            In addition, you have a list of URls as reference: {urls}.
+            Answer the following question: {prompt} based on the information above. 
+            Make sure to return URls as list of citations. 
+        """
+        response = call_palm(f"{processed_user_question}")
+    else:
+        search_results = internet_search(prompt)
+        context = search_results["context"]
+        urls = search_results["urls"]
+        processed_user_question = f"""
+            You are a search engine and you have information from the internet here: {context}.
+            In addition, you have a list of URls as reference: {urls}.
+            Answer the following question: {prompt} based on the information above. 
+            Make sure to return URls as list of citations. 
+        """
+        response = call_palm(f"{processed_user_question}")
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
