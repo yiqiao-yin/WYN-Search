@@ -113,6 +113,7 @@ if prompt := st.chat_input("Enter key words here."):
     else:
         search_results = internet_search(prompt)
         context = search_results["context"]
+        context = ' '.join(context)[::5000]
         urls = search_results["urls"]
         processed_user_question = f"""
             You are a search engine and you have information from the internet here: {context}.
@@ -120,7 +121,10 @@ if prompt := st.chat_input("Enter key words here."):
             Answer the following question: {prompt} based on the information above. 
             Make sure to return URls as list of citations. 
         """
+        responses = []
         response = call_palm(f"{processed_user_question}")
+        responses.append(response)
+        responses.append(urls)
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
