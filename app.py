@@ -2,6 +2,7 @@ from typing import Dict
 
 from duckduckgo_search import DDGS
 import google.generativeai as palm
+import openai
 import streamlit as st
 import pandas as pd
 
@@ -17,6 +18,27 @@ def call_palm(prompt: str) -> str:
         max_output_tokens=800,
     )
     return completion.result
+
+
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+
+def call_chatgpt(prompt: str) -> str:
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt,
+        temperature=0.5,
+        max_tokens=500,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+
+    # Extract the text from the first (and only) choice in the response output.
+    ans = response.choices[0]["text"]
+
+    # Return the generated AI response.
+    return ans
 
 
 def internet_search(prompt: str) -> Dict[str, str]:
@@ -67,6 +89,10 @@ st.markdown(
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
+model = st.sidebar.selectbox(
+    "Choose which language model do you want to use:",
+    ("GPT", "Palm", "More to come...")
+)
 domain = st.sidebar.selectbox(
     "Choose which domain you want to search:",
     ("Text", "Video", "More to come...")
@@ -137,7 +163,12 @@ if prompt := st.chat_input("Enter key words here."):
 
             Make sure to return URls as list of citations.
         """
-        response = call_palm(f"{processed_user_question}")
+        if model == "GPT":
+            response = call_chatgpt(f"{processed_user_question}")
+        elif model == "Palm":
+            response = call_palm(f"{processed_user_question}")
+        else:
+            response = call_chatgpt(f"{processed_user_question}")
     elif domain == "Video":
         response = video_search(prompt)
     else:
@@ -145,12 +176,33 @@ if prompt := st.chat_input("Enter key words here."):
         context = search_results["context"]
         urls = search_results["urls"]
         processed_user_question = f"""
-            You are a search engine and you have information from the internet here: {context}.
-            In addition, you have a list of URls as reference: {urls}.
-            Answer the following question: {prompt} based on the information above. 
-            Make sure to return URls as list of citations. 
+            Here is a url: {urls}
+            Here is user question or keywords: {prompt}
+            Here is some text extracted from the webpage by bs4:
+            ---------
+            {context}
+            ---------
+
+            Web pages can have a lot of useless junk in them. 
+            For example, there might be a lot of ads, or a 
+            lot of navigation links, or a lot of text that 
+            is not relevant to the topic of the page. We want 
+            to extract only the useful information from the text.
+
+            You can use the url and title to help you understand 
+            the context of the text.
+            Please extract only the useful information from the text. 
+            Try not to rewrite the text, but instead extract 
+            only the useful information from the text.
+
+            Make sure to return URls as list of citations.
         """
-        response = call_palm(f"{processed_user_question}")
+        if model == "GPT":
+            response = call_chatgpt(f"{processed_user_question}")
+        elif model == "Palm":
+            response = call_palm(f"{processed_user_question}")
+        else:
+            response = call_chatgpt(f"{processed_user_question}")
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
