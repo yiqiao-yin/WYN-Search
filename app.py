@@ -1,9 +1,9 @@
 from typing import Dict
 
-import google.generativeai as palm
-import pandas as pd
-import streamlit as st
 from duckduckgo_search import DDGS
+import google.generativeai as palm
+import streamlit as st
+import pandas as pd
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
@@ -49,7 +49,7 @@ def video_search(prompt: str) -> pd.DataFrame:
         )
         for r in ddgs_videos_gen:
             data.append({"content": r["content"], "description": r["description"]})
-
+    
     data = pd.DataFrame(data).to_markdown()
 
     return data
@@ -68,7 +68,8 @@ st.markdown(
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
 domain = st.sidebar.selectbox(
-    "Choose which domain you want to search:", ("Text", "Video", "More to come...")
+    "Choose which domain you want to search:",
+    ("Text", "Video", "More to come...")
 )
 counter_placeholder = st.sidebar.empty()
 counter_placeholder.write(f"Next item ... ")
@@ -133,6 +134,8 @@ if prompt := st.chat_input("Enter key words here."):
             Please extract only the useful information from the text. 
             Try not to rewrite the text, but instead extract 
             only the useful information from the text.
+
+            Make sure to return URls as list of citations.
         """
         response = call_palm(f"{processed_user_question}")
     elif domain == "Video":
