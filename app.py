@@ -139,14 +139,14 @@ if prompt := st.chat_input("Enter key words here."):
     # Get response
     if domain == "Text":
         search_results = internet_search(prompt)
-        context = search_results["context"][0:2]
-        urls = search_results["urls"][0:2]
+        context = search_results["context"]
+        urls = search_results["urls"]
         processed_user_question = f"""
             Here is a url: {urls}
             Here is user question or keywords: {prompt}
             Here is some text extracted from the webpage by bs4:
             ---------
-            {context}
+            {context[0:2]}
             ---------
 
             Web pages can have a lot of useless junk in them. 
