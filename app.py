@@ -1,10 +1,10 @@
 from typing import Dict
 
-from duckduckgo_search import DDGS
 import google.generativeai as palm
 import openai
-import streamlit as st
 import pandas as pd
+import streamlit as st
+from duckduckgo_search import DDGS
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
@@ -71,7 +71,7 @@ def video_search(prompt: str) -> pd.DataFrame:
         )
         for r in ddgs_videos_gen:
             data.append({"content": r["content"], "description": r["description"]})
-    
+
     data = pd.DataFrame(data).to_markdown()
 
     return data
@@ -91,11 +91,10 @@ st.markdown(
 st.sidebar.title("Sidebar")
 model = st.sidebar.selectbox(
     "Choose which language model do you want to use:",
-    ("GPT", "Palm", "More to come...")
+    ("GPT", "Palm", "More to come..."),
 )
 domain = st.sidebar.selectbox(
-    "Choose which domain you want to search:",
-    ("Text", "Video", "More to come...")
+    "Choose which domain you want to search:", ("Text", "Video", "More to come...")
 )
 counter_placeholder = st.sidebar.empty()
 counter_placeholder.write(f"Next item ... ")
