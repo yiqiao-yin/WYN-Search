@@ -6,6 +6,11 @@ import pandas as pd
 import streamlit as st
 from duckduckgo_search import DDGS
 
+from langchain.agents import load_tools
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
+from langchain.llms import OpenAI
+
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
 
@@ -77,6 +82,22 @@ def video_search(prompt: str) -> pd.DataFrame:
     return data
 
 
+SERPAPI_API_KEY = st.secrets["SERPAPI_API_KEY"]
+
+
+def call_langchain(prompt: str) -> str:
+    llm = OpenAI(temperature=0)
+    tools = load_tools(["serpapi", "llm-math"], llm=llm)
+    agent = initialize_agent(
+        tools,
+        llm,
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        verbose=True)
+    output = agent.run(prompt)
+
+    return output
+
+
 # Setting page title and header
 st.set_page_config(page_title="WYN AI", page_icon=":robot_face:")
 st.markdown(
@@ -91,7 +112,7 @@ st.markdown(
 st.sidebar.title("Sidebar")
 model = st.sidebar.selectbox(
     "Choose which language model do you want to use:",
-    ("GPT", "Palm", "More to come..."),
+    ("GPT", "Palm", "Langchain Agent"),
 )
 domain = st.sidebar.selectbox(
     "Choose which domain you want to search:", ("Text", "Video", "More to come...")
@@ -137,35 +158,38 @@ if prompt := st.chat_input("Enter key words here."):
 
     # Get response
     if domain == "Text":
-        search_results = internet_search(prompt)
-        context = search_results["context"]
-        urls = search_results["urls"]
-        processed_user_question = f"""
-            Here is a url: {urls}
-            Here is user question or keywords: {prompt}
-            Here is some text extracted from the webpage by bs4:
-            ---------
-            {context[0:2]}
-            ---------
+        if model in ["GPT", "Palm"]:
+            search_results = internet_search(prompt)
+            context = search_results["context"]
+            urls = search_results["urls"]
+            processed_user_question = f"""
+                Here is a url: {urls}
+                Here is user question or keywords: {prompt}
+                Here is some text extracted from the webpage by bs4:
+                ---------
+                {context[0:2]}
+                ---------
 
-            Web pages can have a lot of useless junk in them. 
-            For example, there might be a lot of ads, or a 
-            lot of navigation links, or a lot of text that 
-            is not relevant to the topic of the page. We want 
-            to extract only the useful information from the text.
+                Web pages can have a lot of useless junk in them. 
+                For example, there might be a lot of ads, or a 
+                lot of navigation links, or a lot of text that 
+                is not relevant to the topic of the page. We want 
+                to extract only the useful information from the text.
 
-            You can use the url and title to help you understand 
-            the context of the text.
-            Please extract only the useful information from the text. 
-            Try not to rewrite the text, but instead extract 
-            only the useful information from the text.
+                You can use the url and title to help you understand 
+                the context of the text.
+                Please extract only the useful information from the text. 
+                Try not to rewrite the text, but instead extract 
+                only the useful information from the text.
 
-            Make sure to return URls as list of citations.
-        """
+                Make sure to return URls as list of citations.
+            """
         if model == "GPT":
             response = call_chatgpt(f"{processed_user_question}")
         elif model == "Palm":
             response = call_palm(f"{processed_user_question}")
+        elif model == "Langchain Agent":
+            response = call_langchain(f"{prompt}")
         else:
             response = call_chatgpt(f"{processed_user_question}")
     elif domain == "Video":
