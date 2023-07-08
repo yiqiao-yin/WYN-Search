@@ -112,7 +112,7 @@ st.markdown(
 st.sidebar.title("Sidebar")
 model = st.sidebar.selectbox(
     "Choose which language model do you want to use:",
-    ("GPT", "Palm", "Langchain Agent"),
+    ("Langchain Agent", "GPT", "Palm")
 )
 domain = st.sidebar.selectbox(
     "Choose which domain you want to search:", ("Text", "Video", "More to come...")
