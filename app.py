@@ -102,7 +102,7 @@ def call_langchain(prompt: str) -> str:
 st.set_page_config(page_title="WYN AI", page_icon=":robot_face:")
 st.markdown(
     f"""
-        <h1 style='text-align: center;'>W.Y.N. Search 🧐</h1>
+        <h1 style='text-align: center;'>Web Search 🧐</h1>
     """,
     unsafe_allow_html=True,
 )
