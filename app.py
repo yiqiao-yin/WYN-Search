@@ -13,7 +13,7 @@ from langchain.llms import OpenAI as l_OpenAI
 from typing import List, Dict, Any
 
 import openai
-from openai import OpenAI
+# from openai import OpenAI
 
 
 palm_api_key = st.secrets["PALM_API_KEY"]
@@ -31,7 +31,7 @@ def call_palm(prompt: str) -> str:
 
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-openai_client = OpenAI()
+openai_client = openai.OpenAI()
 
 
 def call_chatgpt(query: str, model: str = "gpt-3.5-turbo") -> str:
