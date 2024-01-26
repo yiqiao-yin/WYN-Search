@@ -10,6 +10,8 @@ from langchain.agents import load_tools
 from langchain.agents import initialize_agent
 from langchain.agents import AgentType
 from langchain.llms import OpenAI
+from typing import List, Dict, Any
+
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
@@ -26,24 +28,38 @@ def call_palm(prompt: str) -> str:
 
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai_client = OpenAI()
 
 
-def call_chatgpt(prompt: str) -> str:
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.5,
-        max_tokens=500,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
+def call_chatgpt(query: str, model: str = "gpt-3.5-turbo") -> str:
+    """
+    Generates a response to a query using the specified language model.
+
+    Args:
+        query (str): The user's query that needs to be processed.
+        model (str, optional): The language model to be used. Defaults to "gpt-3.5-turbo".
+
+    Returns:
+        str: The generated response to the query.
+    """
+
+    # Prepare the conversation context with system and user messages.
+    messages: List[Dict[str, str]] = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": f"Question: {query}."},
+    ]
+
+    # Use the OpenAI client to generate a response based on the model and the conversation context.
+    response: Any = openai_client.chat.completions.create(
+        model=model,
+        messages=messages,
     )
 
-    # Extract the text from the first (and only) choice in the response output.
-    ans = response.choices[0]["text"]
+    # Extract the content of the response from the first choice.
+    content: str = response.choices[0].message.content
 
-    # Return the generated AI response.
-    return ans
+    # Return the generated content.
+    return content
 
 
 def internet_search(prompt: str) -> Dict[str, str]:
@@ -89,10 +105,8 @@ def call_langchain(prompt: str) -> str:
     llm = OpenAI(temperature=0)
     tools = load_tools(["serpapi", "llm-math"], llm=llm)
     agent = initialize_agent(
-        tools,
-        llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True)
+        tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True
+    )
     output = agent.run(prompt)
 
     return output
@@ -112,7 +126,7 @@ st.markdown(
 st.sidebar.title("Sidebar")
 model = st.sidebar.selectbox(
     "Choose which language model do you want to use:",
-    ("Langchain Agent", "GPT", "Palm")
+    ("Langchain Agent", "GPT", "Palm"),
 )
 domain = st.sidebar.selectbox(
     "Choose which domain you want to search:", ("Text", "Video", "More to come...")
