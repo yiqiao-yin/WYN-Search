@@ -9,7 +9,7 @@ from duckduckgo_search import DDGS
 from langchain.agents import load_tools
 from langchain.agents import initialize_agent
 from langchain.agents import AgentType
-from langchain.llms import OpenAI
+from langchain.llms import OpenAI as l_OpenAI
 from typing import List, Dict, Any
 
 
@@ -102,7 +102,7 @@ SERPAPI_API_KEY = st.secrets["SERPAPI_API_KEY"]
 
 
 def call_langchain(prompt: str) -> str:
-    llm = OpenAI(temperature=0, openai_api_key=st.secrets["OPENAI_API_KEY"])
+    llm = l_OpenAI(temperature=0, openai_api_key=st.secrets["OPENAI_API_KEY"])
     tools = load_tools(
         ["serpapi", "llm-math"], llm=llm, serpapi_api_key=SERPAPI_API_KEY
     )
