@@ -12,6 +12,9 @@ from langchain.agents import AgentType
 from langchain.llms import OpenAI as l_OpenAI
 from typing import List, Dict, Any
 
+import openai
+from openai import OpenAI
+
 
 palm_api_key = st.secrets["PALM_API_KEY"]
 palm.configure(api_key=palm_api_key)
