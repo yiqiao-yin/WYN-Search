@@ -31,7 +31,7 @@ def call_palm(prompt: str) -> str:
 
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-openai_client = openai.OpenAI()
+openai_client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
 def call_chatgpt(query: str, model: str = "gpt-3.5-turbo") -> str:
